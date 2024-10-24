@@ -1,0 +1,8 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+data/
+output_projections/
+plots/
+6_d_cohort_progression_plotting.R
