@@ -1,7 +1,7 @@
 # Sub-regional pupil projections
 
 ## Introduction
-This repository contains the code to run the GLA's Sub-regional Pupil Projections. At present these projections are still in development, but are due for release soon. They provide 10-year projections for all National Curriculum Years from Reception up to Year 11, and are released at ITL Level 2 regions.  
+This repository contains the code to run the GLA's Sub-regional Pupil Projections. At present these projections are still in development, but are due for release soon. They provide 10-year projections for all National Curriculum years from Reception up to Year 11, and are released at ITL Level 2 regions.  
 
 ## How to run this repository
 1. Clone the repository
