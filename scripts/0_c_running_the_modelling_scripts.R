@@ -40,5 +40,3 @@ source("scripts/6_c_year_rest_plotting.R")
 
 
 source("scripts/6_e_cohort_progression_plotting_with_prediction_intervals.R")
-
-

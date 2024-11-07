@@ -6,7 +6,7 @@ source("scripts/0_a_inputs.R")
 
 library(data.table)
 
-start_proj_year <- max_year # because I first wrote this script defining the objects start_proj_year and end_proj_year, and only after that created 0_inputs. 
+start_proj_year <- max_year # because I first wrote this script defining the objects start_proj_year and end_proj_year, and only after that created 0_inputs.
 
 end_proj_year <- max_output_year
 
@@ -44,7 +44,7 @@ full_dataset <- rbind(reception, year_one, rest_years)
 
 ### 4. adding new variables
 
-  #### 4.1. adding numbers for nc_years
+#### 4.1. adding numbers for nc_years
 nc_year_lookup <- data.table(
   nc_year = c("reception", "year_group_1", "year_group_2", "year_group_3", "year_group_4", "year_group_5", "year_group_6", "year_group_7", "year_group_8", "year_group_9", "year_group_10", "year_group_11"),
   nc_year_number = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
@@ -52,11 +52,11 @@ nc_year_lookup <- data.table(
 
 full_dataset <- nc_year_lookup[full_dataset, on = c("nc_year" = "nc_year")]
 
-  #### 4.2. adding academic year
+#### 4.2. adding academic year
 full_dataset[, acd_year := paste0(year, "/", year + 1)]
 
 
-  #### 4.3. adding geography names
+#### 4.3. adding geography names
 names_lookup <- fread("lookups/itl_code_name_lookup.csv")
 
 setkey(names_lookup, "itl22cd")
@@ -64,7 +64,7 @@ setkey(full_dataset, "itl22cd")
 
 full_dataset <- names_lookup[full_dataset]
 
-  #### 4.4. rearranging the columns
+#### 4.4. rearranging the columns
 col_ords <- c("itl22cd", "itl22nm", "year", "acd_year", "nc_year", "nc_year_number", "mean_projection", "upper_pi", "lower_pi")
 
 full_dataset <- full_dataset[, ..col_ords]
@@ -74,14 +74,13 @@ full_dataset <- full_dataset[, ..col_ords]
 
 output_filepath <- paste0("output_projections/initial_tenyear/reception_year_11_projections_", start_proj_year, "_", end_proj_year, ".csv")
 
-fwrite(x = full_dataset,
-       file = output_filepath)
+fwrite(
+  x = full_dataset,
+  file = output_filepath
+)
 
 
 rm(list = ls())
 gc()
 gc()
 gc()
-
-
-

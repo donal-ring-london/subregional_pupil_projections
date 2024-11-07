@@ -1,5 +1,3 @@
-
-
 ## 0. loading inputs and functions
 source("scripts/0_a_inputs.R")
 
@@ -53,5 +51,3 @@ check_and_create_dir(paste0("plots/", run_years, "/reception_ratio_diag"))
 check_and_create_dir(paste0("plots/", run_years, "/reception_tenyear"))
 
 check_and_create_dir(paste0("plots/", run_years, "/year_one_tenyear"))
-
-

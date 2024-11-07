@@ -1,4 +1,4 @@
-## the births file is already nearly ready to use, as downloaded. This is a product put together by Marta. 
+## the births file is already nearly ready to use, as downloaded. This is a product put together by Marta.
 ## At the moment I just go to the page and download it - an outstanding to-do is to download it straight from the page.
 
 
@@ -18,14 +18,14 @@ births <- fread("https://data.london.gov.uk/download/modelled-estimates-of-recen
 
 ## 2. cleaning the dataset, for our particular requirements
 
-  ### 2.1. narrowing the dataset down only to ITL2 areas
+### 2.1. narrowing the dataset down only to ITL2 areas
 
 itl_condition <- grep("TL", births$gss_code, ignore.case = TRUE)
 
 births <- births[itl_condition, ]
 
 
-  ### 2.2. narrowing down only to up to mid-year estimates, for the best alignment with the cutoff date for school year intake date
+### 2.2. narrowing down only to up to mid-year estimates, for the best alignment with the cutoff date for school year intake date
 
 months <- tstrsplit(x = births$date, split = "-", fixed = TRUE)[2] # extracting month from the date
 months <- unlist(months)
@@ -35,16 +35,18 @@ midyear_cond <- months == "07" # saving  the logical condition for midyear dates
 births <- births[midyear_cond, ]
 
 
-  ### 2.3. removing columns we don't need
+### 2.3. removing columns we don't need
 
-to_remove <- c("geography", "sex", # because all entries for geography are now ITL221, and all entries for sex are persons
-               "interval_lower", "interval_upper") # if we only have intervals for one or two time periods, there's no point having them. Also, because births are just an input into another model, there is nothing we can do with the uncertainty on births alone anyway. 
+to_remove <- c(
+  "geography", "sex", # because all entries for geography are now ITL221, and all entries for sex are persons
+  "interval_lower", "interval_upper"
+) # if we only have intervals for one or two time periods, there's no point having them. Also, because births are just an input into another model, there is nothing we can do with the uncertainty on births alone anyway.
 
 births <- births[, -..to_remove]
 
-  ### 2.4. filtering out anything past the end year we specified in inputs
+### 2.4. filtering out anything past the end year we specified in inputs
 
-years <- tstrsplit(x = births$date, split = "-", fixed = TRUE)[1] 
+years <- tstrsplit(x = births$date, split = "-", fixed = TRUE)[1]
 years <- as.numeric(unlist(years))
 
 years_to_keep <- years <= max_year
@@ -73,7 +75,7 @@ births_region <- aggregate_geographies_2(
   count_names = c("annual_births")
 )
 
-colnames(births_region)[colnames(births_region) == "itl121cd"] <- "itl221cd" # TO DO - I am actually misnaming the column here. What I should do is have one column that describes the type of geography is - ITL221, ITL121, etc - and then another that gives the code. 
+colnames(births_region)[colnames(births_region) == "itl121cd"] <- "itl221cd" # TO DO - I am actually misnaming the column here. What I should do is have one column that describes the type of geography is - ITL221, ITL121, etc - and then another that gives the code.
 
 ### 5.3 aggregating to all England
 itl_region_lookup[, country_code := "TL"] # TL is obviously not the correct code for all of England, but it doesn't really matter and it makes logical sense within this script
@@ -101,7 +103,7 @@ colnames(births_england)[colnames(births_england) == "itl221cd"] <- "gss_code"
 births_all <- rbind(births, births_region, births_england)
 
 
-  ### 5.5. adding on the geography names. The reason for doing that is here is because the original script only produced ITL level data, which had the names of the ITL. I had to get rid of the names for geographical aggregation, but I want the output after adding the region and country data to look the exact same as before I did this.  
+### 5.5. adding on the geography names. The reason for doing that is here is because the original script only produced ITL level data, which had the names of the ITL. I had to get rid of the names for geographical aggregation, but I want the output after adding the region and country data to look the exact same as before I did this.
 
 name_lookup <- fread("lookups/itl_code_name_lookup.csv")
 
@@ -118,12 +120,13 @@ colnames(births_all)[colnames(births_all) == "itl22nm"] <- "gss_name"
 
 output_filename <- paste0("data/processed_data/births/itl_births_92_to_", substr(max_year, 3, 4), ".csv")
 
-fwrite(x = births_all,
-       file = output_filename) 
+fwrite(
+  x = births_all,
+  file = output_filename
+)
 
 
 rm(list = ls())
 gc()
 gc()
 gc()
-

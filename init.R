@@ -5,12 +5,12 @@ packages <- c("data.table", "forecast")
 
 # Function to check and install missing packages
 install_if_missing <- function(pkg) {
-    if (!requireNamespace(pkg, quietly = TRUE)) {
-        message("Installing ", pkg)
-        install.packages(pkg, dependencies = TRUE)
-    } else {
-        message(pkg, " is already installed.")
-    }
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    message("Installing ", pkg)
+    install.packages(pkg, dependencies = TRUE)
+  } else {
+    message(pkg, " is already installed.")
+  }
 }
 
 # Install required packages
