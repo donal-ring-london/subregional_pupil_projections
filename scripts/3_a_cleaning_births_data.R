@@ -1,5 +1,5 @@
 ## the births file is already nearly ready to use, as downloaded. This is a product put together by Marta. 
-## At the moment I just go to the page and download it - an outstanding to-do is to download it straight from the page.
+## this file just takes in that file and reformats it slightly for our use. 
 
 
 ## 0. setting up libraries and functions
@@ -11,8 +11,6 @@ source("scripts/0_a_inputs.R")
 source("functions/fn_aggregate_geographies_2.R")
 
 ## 1. reading in data
-
-births <- fread("data/raw_data/births/actual_and_predicted_births.csv")
 
 births <- fread("https://data.london.gov.uk/download/modelled-estimates-of-recent-births/9698d0b1-663c-4594-8687-67469ce07e6d/actual_and_predicted_births.csv")
 
