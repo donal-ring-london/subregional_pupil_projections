@@ -5,9 +5,14 @@
 
 
 ## A. libraries and functions
-
 library(data.table)
 library(forecast)
+
+library(foreach)
+library(doParallel)
+
+
+
 
 functions_to_read <- list.files("functions")
 
@@ -45,7 +50,29 @@ input_years <- fread("data_resources/accuracy_testing_windows.csv")
 
 ## C. looping through the input years, creating projections for each one
 
-for(z in 1:nrow(input_years)){
+
+  ### C.1. setting up the parallelisation
+
+n_cores <- detectCores()
+
+cores_to_use <- round(0.75*n_cores)
+
+cl <- makeCluster(cores_to_use)
+
+clusterEvalQ(cl = cl, expr = c(library(forecast),
+                               library(data.table)))
+
+clusterExport(cl = cl, c("all_geogs", "input_years", "births_og", "births_reception_og",
+                         "project_with_ets", "lag_time_series", "concatenate_time_series", 
+                         "get_ts_product", "extract_residuals_ets", "resample_for_bootstrapping",
+                         "extract_bootstrapped_prediction_intervals"), envir = environment())
+
+registerDoParallel(cl)
+
+
+
+  ### C.2. doing the loop
+foreach(z = 1:nrow(input_years)) %dopar% {
   
   ## 0. extracting the number of years to project ahead
   years_ahead <- input_years[z, years_to_project] 
@@ -96,7 +123,10 @@ for(z in 1:nrow(input_years)){
   projected_ratios <- lapply(
     X = all_ts_ratio_list,
     FUN = project_with_ets,
-    periods_ahead = years_ahead
+    periods_ahead = years_ahead,
+    model = "MMN",
+    damped = TRUE,
+    phi = 0.85
   )
   
   
@@ -106,7 +136,8 @@ for(z in 1:nrow(input_years)){
   projected_births <- lapply(
     X = all_ts_births_list,
     FUN = project_with_ets,
-    periods_ahead = years_ahead
+    periods_ahead = years_ahead,
+    damped = TRUE
   )
   
   ### 4.2. lagging births by four years
@@ -162,7 +193,10 @@ for(z in 1:nrow(input_years)){
   ### 6.1. extract the residuals
   ratio_resids <- lapply(
     X = all_ts_ratio_list,
-    FUN = extract_residuals_ets
+    FUN = extract_residuals_ets,
+    model = "MMN",
+    damped = TRUE,
+    phi = 0.85
   )
   
   ### 6.1. resample the residuals
@@ -205,7 +239,10 @@ for(z in 1:nrow(input_years)){
     ratio_resamples_geog_forecast <- lapply(
       X = ratio_resamples_geog_ts,
       FUN = project_with_ets,
-      periods_ahead = years_ahead
+      periods_ahead = years_ahead,
+      model = "MMN",
+      damped = TRUE,
+      phi = 0.85
     )
     
     ratio_resamples_geog_forecast_dt <- convert_tslist_to_dt(ratio_resamples_geog_forecast)
@@ -222,7 +259,8 @@ for(z in 1:nrow(input_years)){
   ### 7.1. extract the residuals
   births_resids <- lapply(
     X = all_ts_births_list, 
-    FUN = extract_residuals_ets
+    FUN = extract_residuals_ets,
+    damped = TRUE
   )
   
   ### 7.2. resample the residuals
@@ -263,7 +301,8 @@ for(z in 1:nrow(input_years)){
     births_resamples_geog_forecast <- lapply(
       X = births_resamples_geog_ts,
       FUN = project_with_ets,
-      periods_ahead = years_ahead
+      periods_ahead = years_ahead,
+      damped = TRUE
     )
     
     births_resamples_geog_forecast_dt <- convert_tslist_to_dt(births_resamples_geog_forecast)
@@ -342,6 +381,19 @@ for(z in 1:nrow(input_years)){
   final_dt <- final_dt[, c("year", "itl22cd", "mean_projection", "upper_pi", "lower_pi")]
   
   
+    #### 9.3.4. forcing the prediction intervals to be symmetric
+  final_dt[, mean_projection := as.numeric(mean_projection)]
+  
+  final_dt[, pi_width := upper_pi - lower_pi]
+  
+  final_dt <- final_dt[, -c("upper_pi", "lower_pi")]
+  
+  final_dt[, upper_pi := (mean_projection + 0.5*pi_width)]
+  final_dt[, lower_pi := (mean_projection - 0.5*pi_width)]
+  
+  final_dt <- final_dt[, -"pi_width"]
+  
+  
   ## 10. writing the output
 
   output_file_name <- paste0("ets_projection_", start_year, "_", end_year, ".csv")
@@ -353,4 +405,5 @@ for(z in 1:nrow(input_years)){
   )
   
 }
+
 

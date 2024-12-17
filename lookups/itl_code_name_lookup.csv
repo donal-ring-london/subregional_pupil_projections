@@ -40,14 +40,14 @@ TLM9,Southern Scotland
 TLN0,Northern Ireland
 TLJ2,"Surrey, East and West Sussex"
 TLJ3,Hampshire and Isle of Wight
-TLC,North East
-TLD,North West
-TLE,Yorkshire and The Humber
-TLG,West Midlands
-TLH,East
-TLI,London
-TLJ,South East
-TLF,East Midlands
-TLM,Scotland
-TLK,South West
-TL,England
+E12000001,North East England
+E12000002,North West England
+E12000003,Yorkshire and The Humber
+E12000005,West Midlands
+E12000006,East England
+E12000007,London
+E12000008,South East England
+E12000004,East Midlands
+S92000003,Scotland
+E12000009,South West England
+E92000001,England

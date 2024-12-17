@@ -26,8 +26,6 @@ for(i in 1:length(geogs)){
   
   geog <- geogs[i]
   
-  all_projections
-  
   ## extracting the data
   mean_projection <- extract_cohort_data_2(
     start_cohort_year = max_year, 

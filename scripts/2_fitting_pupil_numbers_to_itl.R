@@ -101,8 +101,9 @@ pupil_data_region <- aggregate_geographies_2(
 
 colnames(pupil_data_region)[colnames(pupil_data_region) == "itl121cd"] <- "itl221cd" # TO DO - I am actually misnaming the column here. What I should do is have one column that describes the type of geography is - ITL221, ITL121, etc - and then another that gives the code. 
 
+
   ### 5.3 aggregating to all England
-itl_region_lookup[, country_code := "TL"] # TL is obviously not the correct code for all of England, but it doesn't really matter and it makes logical sense within this script
+itl_region_lookup[, country_code := "E92000001"]
 
 region_country_lookup <- itl_region_lookup[, c("itl121cd", "country_code")]
 region_country_lookup <- unique(region_country_lookup) # maybe it would be better to have this as a line within aggregate_geographies_2
@@ -135,6 +136,8 @@ rm(list = ls())
 gc()
 gc()
 gc()
+
+
 
 ### https://l-hodge.github.io/ukgeog/articles/boundary-changes.html
 ### the page above tracks boundary changes in LAs, and it accounts for every troublemaking LA in the dataset. Very useful. 

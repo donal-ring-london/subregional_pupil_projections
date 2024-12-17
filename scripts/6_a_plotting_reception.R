@@ -13,6 +13,21 @@ projections_to_read <- paste0("output_projections/initial_tenyear/reception_proj
 
 projections <- fread(projections_to_read)
 
+
+  ### adjust above so that it reads in total dataset and narrows to relevant nc year. But for now, horrible hack required below. 
+
+projections[, pi_width := upper_pi - lower_pi]
+
+projections <- projections[, -c("upper_pi", "lower_pi")]
+
+projections[, upper_pi := (mean_projection + 0.5*pi_width)]
+projections[, lower_pi := (mean_projection - 0.5*pi_width)]
+
+projections <- projections[, -"pi_width"]
+
+
+
+
 ### 1.1. getting projections and real data into the same dataset
 pupils_to_read <- paste0("data/processed_data/pupil_numbers/itl_pupil_numbers_1112_to_", final_school_period, ".csv")
 

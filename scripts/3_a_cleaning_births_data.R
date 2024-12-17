@@ -74,7 +74,7 @@ births_region <- aggregate_geographies_2(
 colnames(births_region)[colnames(births_region) == "itl121cd"] <- "itl221cd" # TO DO - I am actually misnaming the column here. What I should do is have one column that describes the type of geography is - ITL221, ITL121, etc - and then another that gives the code. 
 
 ### 5.3 aggregating to all England
-itl_region_lookup[, country_code := "TL"] # TL is obviously not the correct code for all of England, but it doesn't really matter and it makes logical sense within this script
+itl_region_lookup[, country_code := "E92000001"] 
 
 region_country_lookup <- itl_region_lookup[, c("itl121cd", "country_code")]
 region_country_lookup <- unique(region_country_lookup) # maybe it would be better to have this as a line within aggregate_geographies_2
@@ -112,7 +112,7 @@ colnames(births_all)[colnames(births_all) == "itl22cd"] <- "gss_code"
 colnames(births_all)[colnames(births_all) == "itl22nm"] <- "gss_name"
 
 
-## 3. writing the dataset
+## 6. writing the dataset
 
 output_filename <- paste0("data/processed_data/births/itl_births_92_to_", substr(max_year, 3, 4), ".csv")
 

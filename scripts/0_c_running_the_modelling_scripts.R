@@ -2,6 +2,9 @@
 
 
 ## 1. running the data processing and modelling scripts
+1+1
+start_time <- Sys.time()
+
 source("scripts/1_reformatting_pupil_numbers.R")
 
 
@@ -28,6 +31,8 @@ source("scripts/5_c_primary_projections.R")
 
 source("scripts/5_d_getting_projections_into_one_output.R")
 
+end_model <- Sys.time()
+
 
 ## 2. running the plotting scripts
 source("scripts/6_a_plotting_reception.R")
@@ -40,5 +45,16 @@ source("scripts/6_c_year_rest_plotting.R")
 
 
 source("scripts/6_e_cohort_progression_plotting_with_prediction_intervals.R")
+
+
+end_model_and_plot <- Sys.time()
+
+## start time was about 11.26am
+
+model_time_taken <- end_model - start_time
+
+all_time_taken <- end_model_and_plot - start_time
+
+
 
 

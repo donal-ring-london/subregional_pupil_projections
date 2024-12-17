@@ -90,7 +90,8 @@ projected_ratios <- lapply(
   FUN = project_with_ets,
   periods_ahead = 10,
   model = "MMN",
-  damped = TRUE
+  damped = TRUE,
+  phi = 0.85
 )
 
 
@@ -100,7 +101,8 @@ projected_ratios <- lapply(
 projected_births <- lapply(
   X = all_ts_births_list,
   FUN = project_with_ets,
-  periods_ahead = 10
+  periods_ahead = 10,
+  damped = TRUE
 )
 
 ### 4.2. lagging births by five years
@@ -158,7 +160,8 @@ ratio_resids <- lapply(
   X = all_ts_ratio_list,
   FUN = extract_residuals_ets,
   model = "MMN",
-  damped = TRUE
+  damped = TRUE,
+  phi = 0.85
 )
 
 ### 6.1. resample the residuals
@@ -203,7 +206,8 @@ for(i in 1:length(all_geogs)){
     FUN = project_with_ets,
     periods_ahead = 10,
     model = "MMN",
-    damped = TRUE
+    damped = TRUE,
+    phi = 0.85
   )
   
   ratio_resamples_geog_forecast_dt <- convert_tslist_to_dt(ratio_resamples_geog_forecast)
@@ -220,7 +224,8 @@ names(ratio_bootstrapped_forecasts) <- all_geogs
 ### 7.1. extract the residuals
 births_resids <- lapply(
   X = all_ts_births_list, 
-  FUN = extract_residuals_ets
+  FUN = extract_residuals_ets,
+  damped = TRUE
 )
 
 ### 7.2. resample the residuals
@@ -261,7 +266,8 @@ for(i in 1:length(all_geogs)){
   births_resamples_geog_forecast <- lapply(
     X = births_resamples_geog_ts,
     FUN = project_with_ets,
-    periods_ahead = 10
+    periods_ahead = 10,
+    damped = TRUE
   )
   
   births_resamples_geog_forecast_dt <- convert_tslist_to_dt(births_resamples_geog_forecast)
@@ -317,7 +323,7 @@ bootstrapped_year_one_intervals <- mapply(
 bootstrapped_prediction_intervals <- lapply(
   FUN = extract_bootstrapped_prediction_intervals,
   X = bootstrapped_year_one_intervals,
-  pi_level = 90
+  pi_level = 95
 )
 
 ## 9. getting everything into one data frame for output

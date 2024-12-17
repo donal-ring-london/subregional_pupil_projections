@@ -20,6 +20,8 @@ lapply(
 pal <- gla_pal(gla_theme = "default", n = 10)
 theme_set(theme_gla(gla_theme = "default", free_y_facets = TRUE))
 
+theme_gla
+
 ## 1. reading in all of the datasets, adding input date range as a variable, getting them all into one dataset
 
   ### 1.1, reading in the ets projections
@@ -153,7 +155,7 @@ both_within_itl <- rbind(ets_within_itl, pa_within_itl)
 positions_mape <- pa_mape_itl[order(mape) ,itl22nm]
 
 png(file = "plots/adhoc_plots/mape.png",
-    height = 8, width = 12, units = "in", res = 600)
+    height = 8, width = 12, units = "in", res = 1000)
 
 ggplot() + 
   geom_bar(data = both_mape_itl, stat = "identity", position = position_dodge(width = 0.7),
@@ -161,15 +163,29 @@ ggplot() +
   scale_y_discrete(limits = positions_mape) + 
   scale_x_continuous(labels = dollar_format(prefix = "", suffix = "%")) + 
   scale_colour_manual(values = c(pal[1], pal[2]), aesthetics = "fill") + 
-  ggtitle("Mean average percentage error, by ITL2 and modelling method")
+  ggtitle("Mean absolute percentage error, by ITL 2 and modelling method")
   
 dev.off()
+
+svg(filename = "plots/adhoc_plots/mape.svg",
+    height = 8, width = 12)
+
+ggplot() + 
+  geom_bar(data = both_mape_itl, stat = "identity", position = position_dodge(width = 0.7),
+           aes(x = mape, y = itl22nm, fill = type)) + 
+  scale_y_discrete(limits = positions_mape) + 
+  scale_x_continuous(labels = dollar_format(prefix = "", suffix = "%")) + 
+  scale_colour_manual(values = c(pal[1], pal[2]), aesthetics = "fill") + 
+  ggtitle("Mean absolute percentage error, by ITL 2 and modelling method")
+
+dev.off()
+
 
 
 positions_within <- ets_within_itl[order(perc_within), itl22nm]
 
 png(file = "plots/adhoc_plots/perc_within.png",
-    height = 8, width = 12, units = "in", res = 600)
+    height = 8, width = 12, units = "in", res = 1000)
 
 ggplot() + 
   geom_bar(data = both_within_itl, stat = "identity", position = position_dodge(width = 0.7),
@@ -177,7 +193,20 @@ ggplot() +
   scale_y_discrete(limits = positions_within) + 
   scale_x_continuous(labels = dollar_format(prefix = "", suffix = "%")) + 
   scale_colour_manual(values = c(pal[1], pal[2]), aesthetics = "fill") + 
-  ggtitle("Percentage within prediction intervals, by ITL2 and modelling method")
+  ggtitle("Percentage within prediction intervals, by ITL 2 and modelling method")
+
+dev.off()
+
+svg(file = "plots/adhoc_plots/perc_within.svg",
+    height = 8, width = 12)
+
+ggplot() + 
+  geom_bar(data = both_within_itl, stat = "identity", position = position_dodge(width = 0.7),
+           aes(x = perc_within, y = itl22nm, fill = type)) + 
+  scale_y_discrete(limits = positions_within) + 
+  scale_x_continuous(labels = dollar_format(prefix = "", suffix = "%")) + 
+  scale_colour_manual(values = c(pal[1], pal[2]), aesthetics = "fill") + 
+  ggtitle("Percentage within prediction intervals, by ITL 2 and modelling method")
 
 dev.off()
 
@@ -192,22 +221,22 @@ pa_projections[, years_projected := as.numeric(year) - as.numeric(input_end)]
   ### 6.2. calculating the metrics by the number of years projected ahead
 ets_mape_byyear <- ets_projections[, .(mape = calculate_mape(real_series = headcount, projected_series = mean_projection)),
                 by = years_projected]
-ets_mape_byyear[, type := "ets"]
+ets_mape_byyear[, type := "Exponential smoothing + bootstrapping"]
 
 pa_mape_byyear <- pa_projections[, .(mape = calculate_mape(real_series = headcount, projected_series = mean_projection)),
                by = years_projected]
-pa_mape_byyear[, type := "pa"]
+pa_mape_byyear[, type := "Past average"]
 
 both_mape_byyear <- rbind(ets_mape_byyear, pa_mape_byyear)
 
 
 ets_within_byyear <- ets_projections[, .(perc_within = calculate_percentage_within_intervals(real_series = headcount, upper_interval = upper_pi, lower_interval = lower_pi)),
                 by = years_projected]
-ets_within_byyear[, type := "ets"]
+ets_within_byyear[, type := "Exponential smoothing + bootstrapping"]
 
 pa_within_byyear <- pa_projections[, .(perc_within = calculate_percentage_within_intervals(real_series = headcount, upper_interval = upper_pi, lower_interval = lower_pi)),
                 by = years_projected]
-pa_within_byyear[, type := "pa"]
+pa_within_byyear[, type := "Past average"]
 
 both_within_byyear <- rbind(ets_within_byyear, pa_within_byyear)
 
@@ -215,7 +244,20 @@ both_within_byyear <- rbind(ets_within_byyear, pa_within_byyear)
 positions_mape <- ets_mape_byyear[order(mape), years_projected]
 
 png(file = "plots/adhoc_plots/mape_by_year.png",
-    height = 8, width = 12, units = "in", res = 600)
+    height = 6, width = 12, units = "in", res = 1000)
+
+ggplot() + 
+  geom_bar(data = both_mape_byyear, stat = "identity", position = position_dodge(width = 0.7),
+           aes(x = mape, y = years_projected, fill = type)) + 
+  scale_y_discrete(limits = positions_mape) + 
+  scale_x_continuous(labels = dollar_format(prefix = "", suffix = "%")) + 
+  scale_colour_manual(values = c(pal[1], pal[2]), aesthetics = "fill") + 
+  ggtitle("Mean absolute percentage error, by year since input data \nand modelling method")
+
+dev.off()
+
+svg(file = "plots/adhoc_plots/mape_by_year.svg",
+    height = 6, width = 12)
 
 ggplot() + 
   geom_bar(data = both_mape_byyear, stat = "identity", position = position_dodge(width = 0.7),
@@ -228,10 +270,11 @@ ggplot() +
 dev.off()
 
 
+
 positions_within <- ets_within_byyear[order(perc_within), years_projected]
 
 png(file = "plots/adhoc_plots/perc_within_by_year.png",
-    height = 8, width = 12, units = "in", res = 600)
+    height = 6, width = 12, units = "in", res = 1000)
 
 ggplot() + 
   geom_bar(data = both_within_byyear, stat = "identity", position = position_dodge(width = 0.7),
@@ -242,5 +285,21 @@ ggplot() +
   ggtitle("Percentage within prediction intervals, by year since input data \nand modelling method")
 
 dev.off()
+
+
+svg(file = "plots/adhoc_plots/perc_within_by_year.svg",
+    height = 6, width = 12)
+
+ggplot() + 
+  geom_bar(data = both_within_byyear, stat = "identity", position = position_dodge(width = 0.7),
+           aes(x = perc_within, y = years_projected, fill = type)) + 
+  scale_y_discrete(limits = positions_within) + 
+  scale_x_continuous(labels = dollar_format(prefix = "", suffix = "%")) + 
+  scale_colour_manual(values = c(pal[1], pal[2]), aesthetics = "fill") + 
+  ggtitle("Percentage within prediction intervals, by year since input data \nand modelling method")
+
+dev.off()
+
+
 
 

@@ -64,13 +64,48 @@ setkey(full_dataset, "itl22cd")
 
 full_dataset <- names_lookup[full_dataset]
 
-  #### 4.4. rearranging the columns
-col_ords <- c("itl22cd", "itl22nm", "year", "acd_year", "nc_year", "nc_year_number", "mean_projection", "upper_pi", "lower_pi")
+full_dataset[, unique(nc_year)]
+
+  #### 4.4. adding secondary/primary information
+prim_sec_lookup <- data.table(
+  nc_year = c("reception", "year_group_1", "year_group_2", "year_group_3", "year_group_4", "year_group_5", "year_group_6", 
+              "year_group_7", "year_group_8", "year_group_9", "year_group_10", "year_group_11"),
+  school_stage = c("primary", "primary", "primary", "primary", "primary", "primary", "primary",
+                   "secondary", "secondary", "secondary", "secondary", "secondary")
+)
+
+setkey(prim_sec_lookup, "nc_year")
+
+setkey(full_dataset, "nc_year")
+
+full_dataset <- prim_sec_lookup[full_dataset]
+
+  #### 4.5. rearranging the columns
+col_ords <- c("itl22cd", "itl22nm", "year", "acd_year", "school_stage", "nc_year", "nc_year_number", "mean_projection", "upper_pi", "lower_pi")
 
 full_dataset <- full_dataset[, ..col_ords]
 
 
-### 5. saving the dataset
+
+
+### 5. shifting the prediction intervals so that they are symmetric around the central forecast. 
+  #### This seems dodgy, but from what I've read this is actually fine to do. Depending on various assumptions etc. It's better anyway than what I've done with the predictions that came via cohort simulation. 
+  #### Will need to make sure to have enough references to back up what I'm doing. 
+
+
+# rough code now, but will turn it into a function when it's ready. 
+
+full_dataset[, pi_width := upper_pi - lower_pi]
+
+full_dataset <- full_dataset[, -c("upper_pi", "lower_pi")]
+
+full_dataset[, upper_pi := (mean_projection + 0.5*pi_width)]
+full_dataset[, lower_pi := (mean_projection - 0.5*pi_width)]
+
+full_dataset <- full_dataset[, -"pi_width"]
+
+
+### 6. saving the dataset
 
 output_filepath <- paste0("output_projections/initial_tenyear/reception_year_11_projections_", start_proj_year, "_", end_proj_year, ".csv")
 

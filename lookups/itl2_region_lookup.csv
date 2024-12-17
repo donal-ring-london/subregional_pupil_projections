@@ -1,36 +1,36 @@
 ﻿itl221cd,itl221nm,itl121cd,itl121nm
-TLC1,Tees Valley and Durham,TLC,North East
-TLC2,"Northumberland, and Tyne and Wear",TLC,North East
-TLD1,Cumbria,TLD,North West
-TLD3,Greater Manchester,TLD,North West
-TLD4,Lancashire,TLD,North West
-TLD6,Cheshire,TLD,North West
-TLD7,Merseyside,TLD,North West
-TLE1,East Yorkshire and Northern Lincolnshire,TLE,Yorkshire and The Humber
-TLE2,North Yorkshire,TLE,Yorkshire and The Humber
-TLG1,"Herefordshire, Worcestershire and Warwickshire",TLG,West Midlands
-TLG2,Shropshire and Staffordshire,TLG,West Midlands
-TLG3,West Midlands,TLG,West Midlands
-TLH1,East Anglia,TLH,East
-TLH2,Bedfordshire and Hertfordshire,TLH,East
-TLH3,Essex,TLH,East
-TLI3,Inner London - West,TLI,London
-TLI4,Inner London - East,TLI,London
-TLI5,Outer London - East and North East,TLI,London
-TLI6,Outer London - South,TLI,London
-TLI7,Outer London - West and North West,TLI,London
-TLJ1,"Berkshire, Buckinghamshire and Oxfordshire",TLJ,South East
-TLE3,South Yorkshire,TLE,Yorkshire and The Humber
-TLE4,West Yorkshire,TLE,Yorkshire and The Humber
-TLF1,Derbyshire and Nottinghamshire,TLF,East Midlands
-TLF2,"Leicestershire, Rutland and Northamptonshire",TLF,East Midlands
-TLF3,Lincolnshire,TLF,East Midlands
-TLM5,North Eastern Scotland,TLM,Scotland
-TLJ4,Kent,TLJ,South East
-TLM6,Highlands and Islands,TLM,Scotland
-TLK1,"Gloucestershire, Wiltshire and Bath/Bristol area",TLK,South West
-TLK2,Dorset and Somerset,TLK,South West
-TLK3,Cornwall and Isles of Scilly,TLK,South West
-TLK4,Devon,TLK,South West
-TLJ2,"Surrey, East and West Sussex",TLJ,South East
-TLJ3,Hampshire and Isle of Wight,TLJ,South East
+TLC1,Tees Valley and Durham,E12000001,North East
+TLC2,"Northumberland, and Tyne and Wear",E12000001,North East
+TLD1,Cumbria,E12000002,North West
+TLD3,Greater Manchester,E12000002,North West
+TLD4,Lancashire,E12000002,North West
+TLD6,Cheshire,E12000002,North West
+TLD7,Merseyside,E12000002,North West
+TLE1,East Yorkshire and Northern Lincolnshire,E12000003,Yorkshire and The Humber
+TLE2,North Yorkshire,E12000003,Yorkshire and The Humber
+TLG1,"Herefordshire, Worcestershire and Warwickshire",E12000005,West Midlands
+TLG2,Shropshire and Staffordshire,E12000005,West Midlands
+TLG3,West Midlands,E12000005,West Midlands
+TLH1,East Anglia,E12000006,East
+TLH2,Bedfordshire and Hertfordshire,E12000006,East
+TLH3,Essex,E12000006,East
+TLI3,Inner London - West,E12000007,London
+TLI4,Inner London - East,E12000007,London
+TLI5,Outer London - East and North East,E12000007,London
+TLI6,Outer London - South,E12000007,London
+TLI7,Outer London - West and North West,E12000007,London
+TLJ1,"Berkshire, Buckinghamshire and Oxfordshire",E12000008,South East
+TLE3,South Yorkshire,E12000003,Yorkshire and The Humber
+TLE4,West Yorkshire,E12000003,Yorkshire and The Humber
+TLF1,Derbyshire and Nottinghamshire,E12000004,East Midlands
+TLF2,"Leicestershire, Rutland and Northamptonshire",E12000004,East Midlands
+TLF3,Lincolnshire,E12000004,East Midlands
+TLM5,North Eastern Scotland,S92000003,Scotland
+TLJ4,Kent,E12000008,South East
+TLM6,Highlands and Islands,S92000003,Scotland
+TLK1,"Gloucestershire, Wiltshire and Bath/Bristol area",E12000009,South West
+TLK2,Dorset and Somerset,E12000009,South West
+TLK3,Cornwall and Isles of Scilly,E12000009,South West
+TLK4,Devon,E12000009,South West
+TLJ2,"Surrey, East and West Sussex",E12000008,South East
+TLJ3,Hampshire and Isle of Wight,E12000008,South East

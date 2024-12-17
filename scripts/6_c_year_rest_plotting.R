@@ -22,6 +22,21 @@ setkey(projections, "itl22cd")
 
 projections <- itl_code_name_lookup[projections]
 
+
+### adjust above so that it reads in total dataset and narrows to relevant nc year. But for now, horrible hack required below. 
+
+projections[, pi_width := upper_pi - lower_pi]
+
+projections <- projections[, -c("upper_pi", "lower_pi")]
+
+projections[, upper_pi := (pupil_number + 0.5*pi_width)]
+projections[, lower_pi := (pupil_number - 0.5*pi_width)]
+
+projections <- projections[, -"pi_width"]
+
+
+
+
   ### 1.2. reading in projections, adding in the ITL names
 pupils_to_read <- paste0("data/processed_data/pupil_numbers/itl_pupil_numbers_1112_to_", final_school_period, ".csv")
 

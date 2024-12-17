@@ -19,7 +19,6 @@ lapply(
 )
 
 
-
 ## 1. reading in data, small cleaning tasks
 pupils_input_filename <- paste0("data/processed_data/pupil_numbers/itl_pupil_numbers_1112_to_", final_school_period, ".csv")
 
@@ -94,6 +93,7 @@ geogs <- pupils[, unique(itl22cd)]
 
 all_ratios_ts_list <- list()
 
+help(par)
 
 for(j in 1:length(nc_years)){ # first for loop - choosing an nc year, filtering the dataset to this nc year
 
@@ -138,7 +138,8 @@ for(j in 1:length(nc_years)){
     FUN = project_with_ets,
     periods_ahead = 10,
     model = "MMN", # MNN if we're are telling it to project no trend. So we're just holding this ratio series constant. 
-    damped = TRUE
+    damped = TRUE, 
+    phi = 0.85
     )
   
   all_nc_years_projected_ratios[[j]] <- projected_nc_year_ratio
@@ -147,104 +148,114 @@ for(j in 1:length(nc_years)){
 
 names(all_nc_years_projected_ratios) <- nc_years
 
-help(forecast.ets)
-
 
 ## 5. calculating uncertainty for the projections above. We're not interesting in producing predictions for the ratios themselves, but instead for using the uncertainty here as an input into the uncertainty for the final projection, when we multiply these ratios by the starting cohort.
 ## when the usual method of calculating uncertainty was used - resampling the input data, repeating the projection on each of these resamples - we ended up with very asymmetric distributions of bootstrapped projections around the central forecast. And given that a starting cohort would be multiplied by these asymmetric distributions again and again, the end resulting prediction intervals were very skewed. 
 ## so now, what we are doing is taking the prediction intervals that are produced automatically by the forecast.ets method, and producing 1,000 bootstrapped samples around these. This way, we have produced a set of bootstrapped projections that are perfectly symmetrically distributed around the central forecast, but that is grounded in a real uncertainty calculation. 
 ## We are assuming a normal distribution around the estimate, which is probably not a sound assumption, but I think it's good enough for this case. 
+## UPDATE - no, not what we're doing now. Calculating them in the normal bootstrapping way, and then just adjusting the intervals so that they are symmetric. 
 
-  ### 5.1. getting the prediction intervals for the projection above
-all_nc_years_prediction_intervals <- list()
+  ### 5.1. extract the residuals
 
-for(j in 1:length(nc_years)){
-  
-  nc_year_tslist <- all_ratios_ts_list[[j]]
-  
-  pis_nc_year_ratio <- lapply(
-    X = nc_year_tslist,
-    FUN = prediction_intervals_with_ets,
-    periods_ahead = 10,
-    pi_level = 90,
-    model = "MMN", # MNN if we're telling it to project no trend. So we're just holding this ratio series constant. 
-    damped = TRUE
-    )
-  
-  all_nc_years_prediction_intervals[[j]] <- pis_nc_year_ratio
-  
-}
+all_nc_years_resids <- list()
 
-names(all_nc_years_prediction_intervals) <- nc_years
-
-
-  ### 5.2. calculating the standard error from the 95% prediction intervals
-all_nc_years_standard_errors <- list()
-
-for(i in 1:length(nc_years)){
+for(nc_year_sel in nc_years){
   
-  nc_year_pis <- all_nc_years_prediction_intervals[[i]]
-  
-  nc_year_se <- lapply(
-    X = nc_year_pis,
-    FUN = function(input_df){return((input_df[,1] - input_df[, 2])/3.29)} # confidence interval to standard error conversion is the difference between the upper and lower limits, divided by 3.92. Because the confidence intervals are calculated as -+1.96*standard_error. 
+  resids <- lapply(
+    X = all_ratios_ts_list[[nc_year_sel]], 
+    FUN = extract_residuals_ets,
+    model = "MMN",
+    damped = TRUE,
+    phi = 0.85
   )
   
-  all_nc_years_standard_errors[[i]] <- nc_year_se
+  all_nc_years_resids[[nc_year_sel]] <- resids
   
 }
 
-names(all_nc_years_standard_errors) <- nc_years
+
+  ### 5.2. resample the residuals
+all_nc_years_resid_resamples <- list()
+
+for(nc_year_sel in nc_years){
+  
+  resid_resamples <- lapply(
+    X = all_nc_years_resids[[nc_year_sel]],
+    FUN = resample_for_bootstrapping,
+    n_resamples = 1000
+  )
+  
+  all_nc_years_resid_resamples[[nc_year_sel]] <- resid_resamples
+  
+}
 
 
-  ### 5.3. creating the "bootstrapped samples" from the central forecast and the standard errors
-  ### looping through each geography and each nc_year, and creating 1,000 bootstrapped versions of the projection by drawing from a normal distribution, with the central forecast as the mean and the standard error calculated above as the standard deviation
+  ### 5.3. add the resampled residuals to the original series
+  ### double for-loop again...clunky but I still think the most readable way to do this
+all_nc_years_final_resamples <- list()
 
-min_year_out <- min(time(all_nc_years_projected_ratios[[1]][[1]])) # these are needed for the column names of the output data.table
-max_year_out <- max(time(all_nc_years_projected_ratios[[1]][[1]]))
-
-simulated_bootstraps_all <- list()
-
-for(i in 1:length(nc_years)){
+for(nc_year_sel in nc_years){
   
-  nc_year_sel <- nc_years[i] # selecting the nc year
+  resid_resamples_nc <- all_nc_years_resid_resamples[[nc_year_sel]]
   
-  nc_year_all_geogs <- list()
+  ratio_ts_nc <- all_ratios_ts_list[[nc_year_sel]]
   
-  for(j in 1:length(geogs)){
-    
-    geog <- geogs[j] # selecting the geography
-    
-    rats <- all_nc_years_projected_ratios[[nc_year_sel]][[geog]] # extracting the ratio series for the nc year and geography specified
-    ses <- all_nc_years_standard_errors[[nc_year_sel]][[geog]] # extracting the standard error around the ratio for the nc year and geography specified
-    
-    rats <- as.numeric(rats)
-    
-    simulated_bootstraps <- mapply( # drawing the 1,000 samples of the ratio projecting
-      FUN = rnorm,
-      mean = rats,
-      sd = ses,
-      n = 1000,
-      SIMPLIFY = TRUE
-    )
-    
-    simulated_bootstraps <- data.table(simulated_bootstraps)
+  final_ratio_resamples <- list()
   
-    names(simulated_bootstraps) <- paste0("year_", min_year_out:max_year_out)
-  
-    nc_year_all_geogs[[j]] <- simulated_bootstraps
-        
+  for(geog_sel in geogs){
+    
+    num_ratio_vec <- as.numeric(ratio_ts_nc[[geog_sel]])
+    resamples <- resid_resamples_nc[[geog_sel]]
+    
+    final_ratio_resamples[[geog_sel]] <- data.table(sweep(resamples, 2, num_ratio_vec, "+"))
+    
   }
   
-  names(nc_year_all_geogs) <- geogs
-  
-  simulated_bootstraps_all[[i]] <- nc_year_all_geogs
+  all_nc_years_final_resamples[[nc_year_sel]] <- final_ratio_resamples
   
 }
 
-names(simulated_bootstraps_all) <- nc_years
 
-bootstrapped_all <- simulated_bootstraps_all # I should fix the script so that this isn't needed - this is because "bootstrapped all" was the name of the output of the original way of getting the 1,000 bootstrapped samples of the ratio
+  ### 5.4. forecasting each resample to get the full bootstrapped uncertainty distribution
+
+first_year <- min(time(all_ratios_ts_list[[1]][[1]]))
+
+all_nc_years_bootstrapped_forecasts <- list()
+
+for(nc_year_sel in nc_years){
+  
+  resamples_sel <- all_nc_years_final_resamples[[nc_year_sel]]
+  
+  nc_year_bootstrapped_forecast <- list()
+  
+  for(geog_sel in geogs){
+    
+    resamples_geog <- resamples_sel[[geog]]  
+    
+    resamples_geog_ts <- apply(X = resamples_geog, MARGIN = 1, FUN = ts, 
+                               start = first_year, frequency = 1, simplify = FALSE)
+    
+    resamples_geog_forecast <- lapply(
+      X = resamples_geog_ts,
+      FUN = project_with_ets,
+      periods_ahead = 10,
+      model = "MMN",
+      damped = TRUE,
+      phi = 0.85
+    )
+    
+    resamples_geog_forecast_dt <- convert_tslist_to_dt(resamples_geog_forecast)
+    
+    nc_year_bootstrapped_forecast[[geog_sel]] <- resamples_geog_forecast_dt
+    
+  }
+  
+  all_nc_years_bootstrapped_forecasts[[nc_year_sel]] <- nc_year_bootstrapped_forecast
+  
+}
+
+
+bootstrapped_all <- all_nc_years_bootstrapped_forecasts
 
 
 ## 6. getting the projections into one data.table
@@ -289,47 +300,3 @@ rm(list = ls())
 gc()
 gc()
 gc()
-
-
-## SOMETHING TO CHECK
-
-## I am still a little unsure about whether I need to make a correction for standard deviationv(as in, between se and sd). 
-## One way to test is to calculate prediction intervals for the ratios by the method of taking percentiles of the bootstrapped samples I've created. 
-## If I was right in using the standard error as the input into rnorm, then intervals produced using this method should be very similar to the intervals created by using what the forecast.ets method automatically produces. 
-## yes, I was right to use standard error as the input for standard deviation, without any further corrections of modifications. I'm leaving this bit of code in here now, in case I need to justify myself later. 
-
-#j <- 10
-
-#nc_year <- nc_years[j]
-
-#par(mfrow = c(4, 9))
-#par(mai = c(0.1, 0.1, 0.1, 0.1))
-
-#for(i in 1:length(geogs)){
-  
-#  geog <- geogs[i]
-  
-#  from_function_pis <- all_nc_years_prediction_intervals[[nc_year]][[geog]]
-  
-#  from_bootstraps <- bootstrapped_all[[nc_year]][[geog]]
-#  from_bootstraps_pis <- extract_bootstrapped_prediction_intervals(from_bootstraps)
-  
-#  ylim_min <- min(c(min(from_function_pis), min(from_bootstraps_pis)))
-  
-#  ylim_max <- max(c(max(from_function_pis), max(from_bootstraps_pis)))
-  
-  
-#  plot(x = 2023:2032, y = rep(1, 10), type = "n", bty = "n", las = 3, ylab = "n", xlab = "n", yaxt = "n", xaxt = "n",
-#       ylim = c(ylim_min, ylim_max))
-  
-#  lines(x = 2023:2032, y = unlist(from_function_pis[, 1]), lwd = 3, col = "blue")
-#  lines(x = 2023:2032, y = unlist(from_function_pis[, 2]), lwd = 3, col = "blue")
-  
-#  lines(x = 2023:2032, y = unlist(from_bootstraps_pis[, 1]), lwd = 3, col = "red")
-#  lines(x = 2023:2032, y = unlist(from_bootstraps_pis[, 2]), lwd = 3, col = "red")
-  
-#}
-
-#par(mfrow = c(1, 1))
-
-
